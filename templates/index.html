@@ -1,0 +1,176 @@
+
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<!-- Bienvenida -->
+<section class="sweet-hero text-center mb-4">
+    <div class="hero-decoration">✦ ✧ ✦</div>
+    <h1>G&A Sweet Dreams</h1>
+    <p class="sweet-subtitle">Un dulce sueño en cada bocado</p>
+    <p class="hero-description">
+        Bienvenido a nuestro rincón de dulzura.
+        Administra las creaciones de nuestra pastelería.
+    </p>
+    <a href="#registro" class="btn btn-dorado">
+        ✨ Agregar nuevo postre
+    </a>
+</section>
+
+<!-- Formulario de registro -->
+<section id="registro" class="card sweet-card mb-4">
+    <div class="card-body p-4">
+        <h2 class="sweet-heading">🍰 Registrar un postre</h2>
+        <p class="text-muted">
+            Agrega una nueva delicia a nuestro catálogo.
+        </p>
+
+        <form method="post"
+              action="{{ url_for('agregar') }}"
+              class="row g-3">
+
+            <div class="col-md-6">
+                <label for="nombre" class="form-label">
+                    Nombre del postre
+                </label>
+                <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    class="form-control"
+                    maxlength="80"
+                    placeholder="Ejemplo: Pastel de fresas"
+                    required>
+            </div>
+
+            <div class="col-md-3">
+                <label for="categoria" class="form-label">
+                    Categoría
+                </label>
+                <select id="categoria"
+                        name="categoria"
+                        class="form-select"
+                        required>
+                    <option value="">Selecciona</option>
+                    {% for categoria in categorias %}
+                    <option value="{{ categoria }}">
+                        {{ categoria }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="estado" class="form-label">
+                    Estado
+                </label>
+                <select id="estado"
+                        name="estado"
+                        class="form-select"
+                        required>
+                    <option value="">Selecciona</option>
+                    {% for estado in estados %}
+                    <option value="{{ estado }}">
+                        {{ estado }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-12 d-flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-dorado">
+                    Guardar postre
+                </button>
+                <button type="reset" class="btn btn-outline-rosa">
+                    Limpiar formulario
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Catálogo -->
+<section id="lista" class="card sweet-card">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between
+                    align-items-center flex-wrap gap-2 mb-3">
+            <div>
+                <h2 class="sweet-heading mb-1">
+                    ♡ Nuestro catálogo
+                </h2>
+                <p class="text-muted mb-0">
+                    Dulces creaciones de G&A Sweet Dreams
+                </p>
+            </div>
+            <span class="sweet-count">
+                {{ productos|length }} productos
+            </span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table sweet-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Nombre del postre</th>
+                        <th>Categoría</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for producto in productos %}
+                    <tr>
+                        <td>
+                            <strong>{{ producto.nombre }}</strong>
+                        </td>
+                        <td>{{ producto.categoria }}</td>
+                        <td>
+                            {% if producto.estado == 'Disponible' %}
+                            <span class="badge bg-success">
+                                Disponible
+                            </span>
+                            {% elif producto.estado == 'Agotado' %}
+                            <span class="badge bg-danger">
+                                Agotado
+                            </span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">
+                                Por encargo
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a class="btn btn-outline-rosa btn-sm"
+                                   href="{{ url_for('editar', id=producto._id) }}">
+                                    Editar
+                                </a>
+
+                                <form method="post"
+                                      action="{{ url_for('eliminar', id=producto._id) }}"
+                                      onsubmit="return confirm('¿Eliminar este postre?');">
+                                    <button type="submit"
+                                            class="btn btn-outline-danger btn-sm">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4"
+                            class="text-center text-muted py-5">
+                            ♡ Todavía no hay postres registrados.
+                            ¡Agrega nuestra primera creación!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

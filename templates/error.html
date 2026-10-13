@@ -1,0 +1,70 @@
+
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+
+        <section class="card sweet-card text-center">
+            <div class="card-body p-4 p-md-5">
+
+                <!-- Decoración -->
+                <div class="hero-decoration mb-3">
+                    ✦ ✧ ✦
+                </div>
+
+                <div style="font-size: 4rem;">
+                    🧁
+                </div>
+
+                <h1 class="sweet-heading mt-3">
+                    ¡Ups! Algo salió mal
+                </h1>
+
+                <p class="sweet-subtitle">
+                    Hasta los sueños más dulces
+                    tienen pequeños contratiempos.
+                </p>
+
+                <!-- Mensaje del error -->
+                <div class="alert mt-4"
+                     role="alert"
+                     style="background-color: #fff0f5;
+                            border: 1px solid #e8d4a8;
+                            border-radius: 15px;
+                            color: #99566f;">
+
+                    <strong>
+                        No pudimos completar tu solicitud.
+                    </strong>
+
+                    <p class="mb-0 mt-2">
+                        {{ mensaje }}
+                    </p>
+
+                </div>
+
+                <p class="text-muted mt-4">
+                    Puedes regresar al catálogo
+                    e intentarlo nuevamente.
+                </p>
+
+                <!-- Regresar -->
+                <a href="{{ url_for('inicio') }}"
+                   class="btn btn-dorado mt-2">
+                    ♡ Volver al catálogo
+                </a>
+
+            </div>
+        </section>
+
+        <p class="text-center mt-4"
+           style="color: #b99450;">
+            ✦ G&A Sweet Dreams ✦
+        </p>
+
+    </div>
+</div>
+
+{% endblock %}

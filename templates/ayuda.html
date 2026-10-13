@@ -1,0 +1,174 @@
+
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+
+        <!-- Encabezado -->
+        <div class="text-center mb-4">
+            <div class="hero-decoration">✦ ✧ ✦</div>
+
+            <h1 class="sweet-heading mt-3">
+                Centro de ayuda
+            </h1>
+
+            <p class="sweet-subtitle">
+                G&A Sweet Dreams
+            </p>
+
+            <p class="text-muted">
+                Aprende a administrar nuestro catálogo
+                de deliciosos postres.
+            </p>
+        </div>
+
+        <!-- Tarjeta de ayuda -->
+        <section class="card sweet-card">
+            <div class="card-body p-4 p-md-5">
+
+                <h2 class="sweet-heading mb-3">
+                    ♡ ¿Cómo funciona nuestra aplicación?
+                </h2>
+
+                <p>
+                    Bienvenido al sistema de administración
+                    de G&A Sweet Dreams. Aquí podrás registrar,
+                    consultar, editar y eliminar los productos
+                    de nuestra pastelería.
+                </p>
+
+                <div class="alert"
+                     style="background:#fff0f5;
+                            border:1px solid #e8d4a8;
+                            color:#99566f;">
+                    Utiliza únicamente información ficticia
+                    durante esta práctica académica.
+                </div>
+
+                <h3 class="sweet-heading h5 mt-4">
+                    🍰 1. Registrar un postre
+                </h3>
+
+                <p>
+                    Ingresa el nombre del postre, selecciona
+                    su categoría y establece su estado.
+                    Después presiona el botón
+                    <strong>Guardar postre</strong>.
+                </p>
+
+                <h3 class="sweet-heading h5 mt-4">
+                    ♡ 2. Consultar el catálogo
+                </h3>
+
+                <p>
+                    En la sección Nuestro catálogo podrás
+                    visualizar todos los productos registrados,
+                    sus categorías y disponibilidad.
+                </p>
+
+                <h3 class="sweet-heading h5 mt-4">
+                    ✨ 3. Editar un producto
+                </h3>
+
+                <p>
+                    Selecciona el botón Editar del producto
+                    que deseas modificar. Cambia los datos
+                    necesarios y guarda los cambios.
+                </p>
+
+                <h3 class="sweet-heading h5 mt-4">
+                    🗑️ 4. Eliminar un producto
+                </h3>
+
+                <p>
+                    Presiona Eliminar en el producto que
+                    deseas borrar. El sistema solicitará
+                    una confirmación antes de eliminarlo.
+                </p>
+
+                <h3 class="sweet-heading h5 mt-4">
+                    💻 5. API JSON
+                </h3>
+
+                <p>
+                    Nuestra aplicación también cuenta con
+                    una API que permite consultar, registrar,
+                    actualizar y eliminar productos mediante
+                    solicitudes HTTP.
+                </p>
+
+                <div class="table-responsive">
+                    <table class="table sweet-table">
+                        <thead>
+                            <tr>
+                                <th>Método</th>
+                                <th>Ruta</th>
+                                <th>Función</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>GET</td>
+                                <td><code>/api/productos</code></td>
+                                <td>Consultar catálogo</td>
+                            </tr>
+
+                            <tr>
+                                <td>GET</td>
+                                <td><code>/api/productos/&lt;id&gt;</code></td>
+                                <td>Consultar producto</td>
+                            </tr>
+
+                            <tr>
+                                <td>POST</td>
+                                <td><code>/api/productos</code></td>
+                                <td>Registrar producto</td>
+                            </tr>
+
+                            <tr>
+                                <td>PUT</td>
+                                <td><code>/api/productos/&lt;id&gt;</code></td>
+                                <td>Actualizar producto</td>
+                            </tr>
+
+                            <tr>
+                                <td>DELETE</td>
+                                <td><code>/api/productos/&lt;id&gt;</code></td>
+                                <td>Eliminar producto</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="text-muted small">
+                    Nota: Esta versión es exclusivamente
+                    académica. La API todavía no requiere
+                    inicio de sesión.
+                </p>
+
+                <p class="text-muted small">
+                    Fecha: {{ fecha }}
+                </p>
+
+                <div class="text-center mt-4">
+                    <a class="btn btn-dorado"
+                       href="{{ url_for('inicio') }}">
+                        ♡ Volver al catálogo
+                    </a>
+                </div>
+
+            </div>
+        </section>
+
+        <p class="text-center mt-4"
+           style="color:#b99450;">
+            ✦ G&A Sweet Dreams ✦
+        </p>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,122 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>G&A Sweet Dreams | Pastelería</title>
+
+    <!-- Bootstrap local -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+
+    <!-- Tipografías elegantes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap"
+          rel="stylesheet">
+
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='estilos.css') }}">
+</head>
+
+<body class="sweet-body">
+
+<!-- Barra de navegación -->
+<nav class="navbar navbar-expand-lg sweet-navbar"
+     aria-label="Menú principal">
+
+    <div class="container">
+
+        <a class="navbar-brand sweet-brand"
+           href="{{ url_for('inicio') }}">
+            G&A <span>Sweet Dreams</span>
+        </a>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#menuPrincipal"
+                aria-controls="menuPrincipal"
+                aria-expanded="false"
+                aria-label="Abrir menú">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse"
+             id="menuPrincipal">
+
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('inicio') }}">
+                        Inicio
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('inicio') }}#registro">
+                        Registrar postre
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('inicio') }}#lista">
+                        Catálogo
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('ayuda') }}">
+                        Ayuda
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Contenido principal -->
+<main class="container py-5">
+
+    {% block contenido %}
+    {% endblock %}
+
+</main>
+
+<!-- Pie de página -->
+<footer class="sweet-footer text-center py-4">
+    <div class="container">
+
+        <h3>G&A Sweet Dreams</h3>
+
+        <p class="mb-2">
+            Un dulce sueño en cada bocado ♡
+        </p>
+
+        <div class="footer-line"></div>
+
+        <small>
+            © 2026 G&A Sweet Dreams |
+            Proyecto académico · Aplicaciones Web
+        </small>
+
+    </div>
+</footer>
+
+<!-- Bootstrap -->
+<script src="{{ url_for('static',
+    filename='bootstrap/js/bootstrap.bundle.min.js') }}">
+</script>
+
+</body>
+</html>

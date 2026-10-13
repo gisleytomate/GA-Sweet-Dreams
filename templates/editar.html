@@ -1,0 +1,125 @@
+
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+
+        <!-- Encabezado -->
+        <div class="text-center mb-4">
+            <div class="hero-decoration">✦ ✧ ✦</div>
+
+            <h1 class="sweet-heading mt-3">
+                Editar nuestro postre
+            </h1>
+
+            <p class="text-muted">
+                Modifica los detalles de esta dulce creación.
+            </p>
+        </div>
+
+        <!-- Formulario -->
+        <section class="card sweet-card">
+            <div class="card-body p-4 p-md-5">
+
+                <h2 class="sweet-heading mb-4">
+                    🍰 Información del postre
+                </h2>
+
+                <form method="post"
+                      action="{{ url_for('editar', id=producto._id) }}">
+
+                    <!-- Nombre -->
+                    <div class="mb-4">
+                        <label for="nombre" class="form-label">
+                            Nombre del postre
+                        </label>
+
+                        <input
+                            type="text"
+                            id="nombre"
+                            name="nombre"
+                            class="form-control"
+                            value="{{ producto.nombre }}"
+                            maxlength="80"
+                            required>
+                    </div>
+
+                    <!-- Categoría -->
+                    <div class="mb-4">
+                        <label for="categoria" class="form-label">
+                            Categoría
+                        </label>
+
+                        <select
+                            id="categoria"
+                            name="categoria"
+                            class="form-select"
+                            required>
+
+                            {% for opcion in categorias %}
+                            <option value="{{ opcion }}"
+                                {% if producto.categoria == opcion %}
+                                selected
+                                {% endif %}>
+                                {{ opcion }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="mb-4">
+                        <label for="estado" class="form-label">
+                            Estado del producto
+                        </label>
+
+                        <select
+                            id="estado"
+                            name="estado"
+                            class="form-select"
+                            required>
+
+                            {% for opcion in estados %}
+                            <option value="{{ opcion }}"
+                                {% if producto.estado == opcion %}
+                                selected
+                                {% endif %}>
+                                {{ opcion }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="d-flex gap-3 flex-wrap mt-4">
+
+                        <button type="submit"
+                                class="btn btn-dorado">
+                            ✨ Guardar cambios
+                        </button>
+
+                        <a class="btn btn-outline-rosa"
+                           href="{{ url_for('inicio') }}#lista">
+                            Cancelar
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </section>
+
+        <p class="text-center mt-4"
+           style="color: #b99450;">
+            ♡ G&A Sweet Dreams · Hecho con dulzura ♡
+        </p>
+
+    </div>
+</div>
+
+{% endblock %}
