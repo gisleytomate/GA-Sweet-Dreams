@@ -106,71 +106,200 @@
                 {{ productos|length }} productos
             </span>
         </div>
-
-        <div class="table-responsive">
-            <table class="table sweet-table align-middle">
-                <thead>
-                    <tr>
-                        <th>Nombre del postre</th>
-                        <th>Categoría</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for producto in productos %}
-                    <tr>
-                        <td>
-                            <strong>{{ producto.nombre }}</strong>
-                        </td>
-                        <td>{{ producto.categoria }}</td>
-                        <td>
-                            {% if producto.estado == 'Disponible' %}
-                            <span class="badge bg-success">
-                                Disponible
-                            </span>
-                            {% elif producto.estado == 'Agotado' %}
-                            <span class="badge bg-danger">
-                                Agotado
-                            </span>
-                            {% else %}
-                            <span class="badge bg-warning text-dark">
-                                Por encargo
-                            </span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="d-flex gap-2 flex-wrap">
-                                <a class="btn btn-outline-rosa btn-sm"
-                                   href="{{ url_for('editar', id=producto._id) }}">
-                                    Editar
-                                </a>
-
-                                <form method="post"
-                                      action="{{ url_for('eliminar', id=producto._id) }}"
-                                      onsubmit="return confirm('¿Eliminar este postre?');">
-                                    <button type="submit"
-                                            class="btn btn-outline-danger btn-sm">
-                                        Eliminar
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4"
-                            class="text-center text-muted py-5">
-                            ♡ Todavía no hay postres registrados.
-                            ¡Agrega nuestra primera creación!
-                        </td>
-                    </tr>
+        <!-- Buscador y filtros del catálogo -->
+         <div class="row g-3 mb-4">
+            
+            <div class="col-md-5">
+                <label for="buscarPostre" class="form-label">
+                    🔎 Buscar postre
+                </label>
+                <input
+                type="search"
+                id="buscarPostre"
+                class="form-control"
+                placeholder="Ejemplo: Pastel de chocolate">
+            </div>
+            
+            <div class="col-md-4">
+                <label for="filtrarCategoria" class="form-label">
+                    🍰Filtrar por categoría
+                </label>
+                <select id="filtrarCategoria" class="form-select">
+                    <option value="">Todas las categorías</option>
+                    {% for categoria in categorias %}
+                    <option value="{{ categoria }}">
+                        {{ categoria }}
+                    </option>
                     {% endfor %}
-                </tbody>
-            </table>
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label for="filtrarEstado" class="form-label">
+                    ✨ Disponibilidad
+                </label>
+                <select id="filtrarEstado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    {% for estado in estados %}
+                    <option value="{{ estado }}">
+                        {{ estado }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
+        <p id="resultadoBusqueda"
+        class="text-muted small"
+        aria-live="polite">
+    </p>
+    <!-- Catálogo visual de postres -->
+     <div class="row g-4" id="catalogoProductos">
+        {% for producto in productos %}
+        <div class="col-12 col-sm-6 col-lg-3 fila-producto"
+        data-nombre="{{ producto.nombre|lower }}"
+        data-categoria="{{ producto.categoria }}"
+        data-estado="{{ producto.estado }}">
+        
+        <article class="card sweet-product-card h-100">
+            
+            {% set imagenes = {
+                'Pasteles': 'pasteles.jpeg',
+                'Cupcakes': 'cupcakes.jpeg',
+                'Galletas': 'galletas.jpeg',
+                'Cheesecakes': 'cheesecakes.jpeg',
+                'Macarons': 'macarons.jpeg',
+                'Postres especiales': 'postres.jpeg'
+            } %}
+            {% set imagen = imagenes.get(producto.categoria, 'postres.jpeg') %}
+            
+            <div class="sweet-product-image">
+                <img
+                src="{{ url_for('static', filename='imagenes/' ~ imagen) }}"
+                alt="Imagen ilustrativa de {{ producto.categoria }}"
+                loading="lazy">
+                
+                <span class="sweet-product-category">
+                    {{ producto.categoria }}
+                </span>
+            </div>
+            
+            <div class="card-body d-flex flex-column">
+                
+                <h3 class="sweet-product-title">
+                    {{ producto.nombre }}
+                </h3>
+                
+                <p class="sweet-product-type">
+                    G&A Sweet Dreams
+                </p>
+                
+                <div class="mb-3">
+                    {% if producto.estado == 'Disponible' %}
+                    <span class="badge bg-success">Disponible</span>
+                    {% elif producto.estado == 'Agotado' %}
+                    <span class="badge bg-danger">Agotado</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">
+                        Por encargo
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex gap-2 mt-auto">
+                    <a class="btn btn-outline-rosa btn-sm flex-fill"
+                       href="{{ url_for('editar', id=producto._id) }}">
+                        Editar
+                    </a>
+                    
+                    
+                <form method="post"
+                class="flex-fill"
+                action="{{ url_for('eliminar', id=producto._id) }}"
+                onsubmit="return confirm('¿Eliminar este postre?');">
+                <button type="submit"
+                class="btn btn-outline-danger btn-sm w-100">
+                Eliminar
+            </button>
+        </form>
+    </div>
+</div>
+</article>
+</div>
+
+    {% else %}
+
+    <div class="col-12 text-center py-5">
+        <p class="text-muted">
+            ♡ Todavía no hay postres registrados.
+            ¡Agrega nuestra primera creación!
+        </p>
+    </div>
+
+    {% endfor %}
+</div>
+
+
     </div>
 </section>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const buscador = document.getElementById("buscarPostre");
+    const categoria = document.getElementById("filtrarCategoria");
+    const estado = document.getElementById("filtrarEstado");
+    const filas = document.querySelectorAll(".fila-producto");
+    const resultado = document.getElementById("resultadoBusqueda");
+
+    function filtrarProductos() {
+        const texto = buscador.value.trim().toLocaleLowerCase();
+        const categoriaElegida = categoria.value;
+        const estadoElegido = estado.value;
+
+        let visibles = 0;
+
+        filas.forEach(function (fila) {
+            const nombreProducto = fila.dataset.nombre;
+            const categoriaProducto = fila.dataset.categoria;
+            const estadoProducto = fila.dataset.estado;
+
+            const coincideNombre =
+                nombreProducto.includes(texto);
+
+            const coincideCategoria =
+                !categoriaElegida ||
+                categoriaProducto === categoriaElegida;
+
+            const coincideEstado =
+                !estadoElegido ||
+                estadoProducto === estadoElegido;
+
+            const mostrar =
+                coincideNombre &&
+                coincideCategoria &&
+                coincideEstado;
+
+            fila.hidden = !mostrar;
+            fila.style.display = mostrar ? "" : "none";
+
+            if (mostrar) {
+                visibles++;
+            }
+        });
+
+        resultado.textContent =
+            "Mostrando " + visibles +
+            " de " + filas.length + " productos.";
+    }
+
+    buscador.addEventListener("input", filtrarProductos);
+    categoria.addEventListener("change", filtrarProductos);
+    estado.addEventListener("change", filtrarProductos);
+
+    filtrarProductos();
+});
+</script>
+
 
 {% endblock %}

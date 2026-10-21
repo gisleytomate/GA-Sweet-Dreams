@@ -3,16 +3,19 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>G&A Sweet Dreams | Pastelería</title>
+    <meta name="theme-color" content="#fff4f7">
+    <meta name="description"
+          content="G&A Sweet Dreams: catálogo y administración de productos de pastelería.">
+
+    <title>{% block titulo %}G&A Sweet Dreams | Pastelería{% endblock %}</title>
 
     <!-- Bootstrap local -->
     <link rel="stylesheet"
           href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
 
-    <!-- Tipografías elegantes -->
+    <!-- Tipografías -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -26,97 +29,147 @@
 
 <body class="sweet-body">
 
-<!-- Barra de navegación -->
-<nav class="navbar navbar-expand-lg sweet-navbar"
-     aria-label="Menú principal">
+    <!-- Barra superior -->
+    <div class="sweet-announcement text-center">
+        ✨ Bienvenidos a G&A Sweet Dreams · Un dulce sueño en cada bocado ✨
+    </div>
 
-    <div class="container">
+    <!-- Navegación -->
+    <nav class="navbar navbar-expand-lg sweet-navbar"
+         aria-label="Menú principal">
 
-        <a class="navbar-brand sweet-brand"
-           href="{{ url_for('inicio') }}">
-            G&A <span>Sweet Dreams</span>
-        </a>
+        <div class="container">
 
-        <button class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#menuPrincipal"
-                aria-controls="menuPrincipal"
-                aria-expanded="false"
-                aria-label="Abrir menú">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+            <a class="navbar-brand sweet-brand"
+               href="{{ url_for('inicio') }}">
+                G&A <span>Sweet Dreams</span>
+            </a>
 
-        <div class="collapse navbar-collapse"
-             id="menuPrincipal">
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#menuPrincipal"
+                    aria-controls="menuPrincipal"
+                    aria-expanded="false"
+                    aria-label="Abrir menú">
 
-            <ul class="navbar-nav ms-auto align-items-lg-center">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('inicio') }}">
+            <div class="collapse navbar-collapse"
+                 id="menuPrincipal">
+
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="{{ url_for('inicio') }}">
+                            Inicio
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="{{ url_for('inicio') }}#lista">
+                            Nuestro catálogo
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="{{ url_for('ayuda') }}">
+                            Ayuda
+                        </a>
+                    </li>
+
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn sweet-nav-button"
+                           href="{{ url_for('inicio') }}#registro">
+                            + Registrar postre
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="sweet-main">
+        <div class="container py-5">
+
+            {% block contenido %}
+            {% endblock %}
+
+        </div>
+    </main>
+
+    <!-- Pie de página -->
+    <footer class="sweet-footer">
+        <div class="container py-5">
+
+            <div class="row gy-4 align-items-start">
+
+                <div class="col-md-6">
+                    <h3 class="sweet-footer-brand">
+                        G&A Sweet Dreams
+                    </h3>
+
+                    <p class="sweet-footer-description">
+                        Un dulce sueño en cada bocado ♡
+                    </p>
+
+                    <p class="sweet-footer-description">
+                        Un espacio dedicado a organizar
+                        y presentar nuestras creaciones
+                        de pastelería.
+                    </p>
+                </div>
+
+                <div class="col-md-3">
+                    <h4 class="sweet-footer-heading">
+                        Explorar
+                    </h4>
+
+                    <a href="{{ url_for('inicio') }}">
                         Inicio
                     </a>
-                </li>
 
-                <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('inicio') }}#registro">
-                        Registrar postre
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('inicio') }}#lista">
+                    <a href="{{ url_for('inicio') }}#lista">
                         Catálogo
                     </a>
-                </li>
 
-                <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('ayuda') }}">
-                        Ayuda
+                    <a href="{{ url_for('inicio') }}#registro">
+                        Registrar postre
                     </a>
-                </li>
+                </div>
 
-            </ul>
+                <div class="col-md-3">
+                    <h4 class="sweet-footer-heading">
+                        Información
+                    </h4>
+
+                    <a href="{{ url_for('ayuda') }}">
+                        Centro de ayuda
+                    </a>
+
+                    <span class="sweet-footer-note">
+                        Proyecto académico
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="sweet-footer-bottom text-center">
+                © 2026 G&A Sweet Dreams |
+                Aplicaciones Web · Práctica 05
+            </div>
+
         </div>
-    </div>
-</nav>
+    </footer>
 
-<!-- Contenido principal -->
-<main class="container py-5">
-
-    {% block contenido %}
-    {% endblock %}
-
-</main>
-
-<!-- Pie de página -->
-<footer class="sweet-footer text-center py-4">
-    <div class="container">
-
-        <h3>G&A Sweet Dreams</h3>
-
-        <p class="mb-2">
-            Un dulce sueño en cada bocado ♡
-        </p>
-
-        <div class="footer-line"></div>
-
-        <small>
-            © 2026 G&A Sweet Dreams |
-            Proyecto académico · Aplicaciones Web
-        </small>
-
-    </div>
-</footer>
-
-<!-- Bootstrap -->
-<script src="{{ url_for('static',
-    filename='bootstrap/js/bootstrap.bundle.min.js') }}">
-</script>
+    <!-- Bootstrap -->
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
 </body>
 </html>

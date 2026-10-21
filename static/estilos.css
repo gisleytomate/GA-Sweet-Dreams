@@ -1,6 +1,6 @@
 
 /* G&A SWEET DREAMS */
-/* Diseño elegante rosa, blanco y dorado */
+/* ESTILOS ORIGINALES RECUPERADOS */
 
 :root {
     --rosa-claro: #fff0f5;
@@ -13,7 +13,13 @@
     --texto: #654e59;
 }
 
-/* ESTILO GENERAL */
+html {
+    scroll-behavior: smooth;
+}
+
+section[id] {
+    scroll-margin-top: 100px;
+}
 
 body.sweet-body {
     background: linear-gradient(
@@ -27,15 +33,7 @@ body.sweet-body {
     min-height: 100vh;
 }
 
-html {
-    scroll-behavior: smooth;
-}
-
-section[id] {
-    scroll-margin-top: 100px;
-}
-
-/* BARRA DE NAVEGACIÓN */
+/* NAVEGACIÓN */
 
 .sweet-navbar {
     background: rgba(255, 255, 255, 0.96);
@@ -70,11 +68,7 @@ section[id] {
 
 .sweet-hero {
     padding: 65px 25px;
-    background: linear-gradient(
-        135deg,
-        #ffffff,
-        #ffe2eb
-    );
+    background: linear-gradient(135deg, #ffffff, #ffe2eb);
     border: 1px solid var(--dorado-claro);
     border-radius: 25px;
     box-shadow: 0 12px 35px rgba(160, 100, 125, 0.12);
@@ -147,11 +141,7 @@ section[id] {
 /* BOTONES */
 
 .btn-dorado {
-    background: linear-gradient(
-        135deg,
-        #cba96a,
-        #a98440
-    );
+    background: linear-gradient(135deg, #cba96a, #a98440);
     color: white;
     border: none;
     border-radius: 12px;
@@ -255,7 +245,7 @@ section[id] {
     }
 }
 
-/* DISEÑO PARA CELULARES */
+/* CELULARES */
 
 @media (max-width: 768px) {
     .sweet-hero {
@@ -282,5 +272,270 @@ section[id] {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
+    }
+}
+
+
+
+/* =====================================
+   G&A SWEET DREAMS - MEJORAS VISUALES
+   ===================================== */
+
+/* BARRA DE BIENVENIDA */
+
+.sweet-announcement {
+    background: linear-gradient(
+        90deg,
+        #a66a82,
+        #c68fa2,
+        #a66a82
+    );
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    padding: 10px 15px;
+}
+
+/* MENÚ MÁS MODERNO */
+
+.sweet-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    padding: 14px 0;
+    backdrop-filter: blur(14px);
+}
+
+.sweet-navbar .nav-link {
+    position: relative;
+    padding: 10px 12px;
+}
+
+.sweet-navbar .nav-link::after {
+    content: "";
+    position: absolute;
+    bottom: 3px;
+    left: 12px;
+    right: 12px;
+    height: 2px;
+    background: var(--dorado);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.3s ease;
+}
+
+.sweet-navbar .nav-link:hover::after {
+    transform: scaleX(1);
+}
+
+/* BOTÓN DESTACADO DEL MENÚ */
+
+.sweet-nav-button {
+    background: linear-gradient(
+        135deg,
+        #c68da2,
+        #a66a82
+    );
+    color: white;
+    border: 1px solid #a66a82;
+    border-radius: 30px;
+    padding: 11px 22px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.sweet-nav-button:hover,
+.sweet-nav-button:focus {
+    background: #99566f;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(153, 86, 111, 0.22);
+}
+
+/* CONTENIDO PRINCIPAL */
+
+.sweet-main {
+    min-height: 65vh;
+}
+
+/* TARJETAS CON EFECTO ELEGANTE */
+
+.sweet-card {
+    transition:
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.sweet-card:hover {
+    border-color: var(--dorado-claro);
+    box-shadow: 0 14px 36px rgba(174, 110, 132, 0.16);
+}
+
+/* BOTONES CON MEJOR ACCESIBILIDAD */
+
+.btn-dorado:focus-visible,
+.btn-outline-rosa:focus-visible,
+.sweet-nav-button:focus-visible,
+.sweet-navbar .nav-link:focus-visible {
+    outline: 3px solid var(--dorado);
+    outline-offset: 3px;
+}
+
+/* PIE DE PÁGINA PROFESIONAL */
+
+.sweet-footer {
+    background: linear-gradient(
+        135deg,
+        #fff7fa,
+        #fbe5ec,
+        #fff9f0
+    );
+    border-top: 2px solid var(--dorado-claro);
+    margin-top: 60px;
+}
+
+.sweet-footer-brand {
+    font-family: 'Great Vibes', cursive;
+    font-size: 3rem;
+    color: var(--rosa-oscuro);
+    margin-bottom: 12px;
+}
+
+.sweet-footer-description {
+    max-width: 380px;
+    font-size: 0.92rem;
+    line-height: 1.8;
+    color: var(--texto);
+}
+
+.sweet-footer-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--rosa-oscuro);
+    margin-bottom: 20px;
+}
+
+.sweet-footer a {
+    display: block;
+    width: fit-content;
+    color: var(--texto);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    transition: color 0.3s ease;
+}
+
+.sweet-footer a:hover {
+    color: var(--rosa-oscuro);
+    text-decoration: underline;
+}
+
+.sweet-footer-note {
+    color: var(--texto);
+    font-size: 0.9rem;
+}
+
+.sweet-footer-bottom {
+    border-top: 1px solid #e9cbd5;
+    margin-top: 35px;
+    padding-top: 25px;
+    font-size: 0.82rem;
+    color: var(--rosa-oscuro);
+}
+
+/* AJUSTES PARA CELULARES */
+
+@media (max-width: 768px) {
+    .sweet-announcement {
+        font-size: 0.68rem;
+        letter-spacing: 0;
+        padding: 9px;
+    }
+
+    .sweet-navbar {
+        padding: 12px 0;
+    }
+
+    .sweet-nav-button {
+        margin-top: 12px;
+        text-align: center;
+    }
+
+    .sweet-footer-brand {
+        font-size: 2.5rem;
+    }
+
+    .sweet-footer {
+        margin-top: 35px;
+    }
+}
+
+
+/* TARJETAS DEL CATÁLOGO */
+
+.sweet-product-card {
+    border: 1px solid #f0d9e1;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(153, 86, 111, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sweet-product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 32px rgba(153, 86, 111, 0.16);
+}
+
+.sweet-product-image {
+    position: relative;
+    height: 280px;
+    background: #fff0f5;
+    overflow: hidden;
+}
+
+.sweet-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.sweet-product-card:hover img {
+    transform: scale(1.05);
+}
+
+.sweet-product-category {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    padding: 7px 14px;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #99566f;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.sweet-product-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #99566f;
+    margin-bottom: 8px;
+}
+
+.sweet-product-type {
+    font-size: 0.85rem;
+    color: #927781;
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    .sweet-product-image {
+        height: 240px;
     }
 }
