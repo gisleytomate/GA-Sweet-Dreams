@@ -7,7 +7,7 @@
 
     <meta name="theme-color" content="#fff4f7">
     <meta name="description"
-          content="G&A Sweet Dreams: catálogo y administración de productos de pastelería.">
+          content="G&A Sweet Dreams: pastelería y catálogo de postres.">
 
     <title>{% block titulo %}G&A Sweet Dreams | Pastelería{% endblock %}</title>
 
@@ -64,14 +64,22 @@
                     <li class="nav-item">
                         <a class="nav-link"
                            href="{{ url_for('inicio') }}">
-                            Inicio
+                            🏠 Inicio
                         </a>
                     </li>
+                    
+                    <li class="nav-item">
+                    <a class="nav-link"
+                    href="{{ url_for('ver_carrito') }}">
+                    🛒 Mi carrito
+                </a>
+            </li>
+
 
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ url_for('inicio') }}#lista">
-                            Nuestro catálogo
+                           href="{{ url_for('catalogo') }}">
+                            🍰 Catálogo
                         </a>
                     </li>
 
@@ -82,10 +90,12 @@
                         </a>
                     </li>
 
+
+                    <!-- Acceso provisional durante el desarrollo -->
                     <li class="nav-item ms-lg-2">
                         <a class="btn sweet-nav-button"
-                           href="{{ url_for('inicio') }}#registro">
-                            + Registrar postre
+                           href="{{ url_for('administracion') }}">
+                            🔐 Administración
                         </a>
                     </li>
 
@@ -120,9 +130,8 @@
                     </p>
 
                     <p class="sweet-footer-description">
-                        Un espacio dedicado a organizar
-                        y presentar nuestras creaciones
-                        de pastelería.
+                        Postres preparados con amor para
+                        acompañarte en tus momentos especiales.
                     </p>
                 </div>
 
@@ -135,13 +144,37 @@
                         Inicio
                     </a>
 
-                    <a href="{{ url_for('inicio') }}#lista">
-                        Catálogo
+                    <a href="{{ url_for('catalogo') }}">
+                        Catálogo de postres
                     </a>
+                    
+                    {% if session.get("es_admin") %}
+                    <a class="nav-link"
+                    href="{{ url_for('administracion') }}">
+                    Administración
+                </a>
+                
+                <form action="{{ url_for('logout') }}"
+                method="POST"
+                class="d-inline">
 
-                    <a href="{{ url_for('inicio') }}#registro">
-                        Registrar postre
-                    </a>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                
+                <button type="submit"
+                class="btn btn-outline-danger btn-sm">
+                Cerrar sesión
+            </button>
+        
+        </form>
+        
+        {% else %}
+        <a class="nav-link"
+        href="{{ url_for('login') }}">
+        Acceso de dueños
+    </a>
+    
+    {% endif %}
+
                 </div>
 
                 <div class="col-md-3">

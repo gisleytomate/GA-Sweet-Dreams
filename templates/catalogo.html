@@ -1,0 +1,293 @@
+
+{% extends 'base.html' %}
+
+{% block contenido %}
+
+<section class="sweet-hero text-center mb-4">
+    <div class="hero-decoration">✦ ✧ ✦</div>
+
+    <h1>Nuestros postres</h1>
+
+    <p class="sweet-subtitle">
+        Un dulce sueño en cada bocado
+    </p>
+
+    <p class="hero-description">
+        Descubre nuestras deliciosas creaciones,
+        preparadas especialmente para ti.
+    </p>
+</section>
+
+<section class="card sweet-card mb-4">
+    <div class="card-body p-4">
+
+        <div class="d-flex justify-content-between
+                    align-items-center flex-wrap gap-2 mb-3">
+            <div>
+                <h2 class="sweet-heading mb-1">
+                    ♡ Catálogo de postres
+                </h2>
+                <p class="text-muted mb-0">
+                    Encuentra tu próximo postre favorito.
+                </p>
+            </div>
+
+            <span class="sweet-count">
+                {{ productos|length }} productos
+            </span>
+        </div>
+
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-5">
+                <label for="buscarPostre" class="form-label">
+                    🔎 Buscar postre
+                </label>
+                <input type="search"
+                       id="buscarPostre"
+                       class="form-control"
+                       placeholder="Ejemplo: Pastel de chocolate">
+            </div>
+
+            <div class="col-md-4">
+                <label for="filtrarCategoria" class="form-label">
+                    🍰 Categoría
+                </label>
+                <select id="filtrarCategoria" class="form-select">
+                    <option value="">Todas las categorías</option>
+                    {% for categoria in categorias %}
+                    <option value="{{ categoria }}">
+                        {{ categoria }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="filtrarEstado" class="form-label">
+                    ✨ Disponibilidad
+                </label>
+                <select id="filtrarEstado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    {% for estado in estados %}
+                    <option value="{{ estado }}">
+                        {{ estado }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+
+        <p id="resultadoBusqueda"
+           class="text-muted small"
+           aria-live="polite"></p>
+
+        <div class="row g-4" id="catalogoProductos">
+
+            {% set imagenes = {
+                'Pasteles': 'pasteles.jpeg',
+                'Cupcakes': 'cupcakes.jpeg',
+                'Galletas': 'galletas.jpeg',
+                'Cheesecakes': 'cheesecakes.jpeg',
+                'Macarons': 'macarons.jpeg',
+                'Postres especiales': 'postres.jpeg'
+            } %}
+
+            {% for producto in productos %}
+
+            {% set imagen = imagenes.get(
+                producto.categoria, 'postres.jpeg'
+            ) %}
+
+            <div class="col-12 col-sm-6 col-lg-3 fila-producto"
+                 data-nombre="{{ producto.nombre|lower }}"
+                 data-categoria="{{ producto.categoria }}"
+                 data-estado="{{ producto.estado }}">
+
+                <article class="card sweet-product-card h-100">
+
+                    <div class="sweet-product-image">
+                        {% if producto.imagen %}
+                        <img
+                        src="{{ url_for('static', filename='uploads/' ~ producto.imagen) }}"
+                        alt="Fotografía de {{ producto.nombre }}"
+                        loading="lazy">
+                        {% else %}
+                        
+                        <img
+                        src="{{ url_for('static', filename='imagenes/' ~ imagen) }}"
+                        alt="Imagen ilustrativa de {{ producto.categoria }}"
+                        loading="lazy">
+                        {% endif %}
+
+
+                        <span class="sweet-product-category">
+                            {{ producto.categoria }}
+                        </span>
+                    </div>
+
+                    <div class="card-body d-flex flex-column">
+
+                        <h3 class="sweet-product-title">
+                            {{ producto.nombre }}
+                        </h3>
+                        <p class="fw-bold fs-5 mb-2" style="color: #b8860b;">
+                            {% if producto.precio_centavos is defined %}
+                             ${{ "%.2f"|format(producto.precio_centavos / 100) }} MXN
+                            {% else %}
+                             Precio por definir
+                            {% endif %}
+                        </p>
+
+
+
+                        <p class="sweet-product-type">
+                            G&A Sweet Dreams
+                        </p>
+
+                        <div class="mb-3">
+                            {% if producto.estado == 'Disponible' %}
+                            <span class="badge bg-success">
+                                Disponible
+                            </span>
+                            {% elif producto.estado == 'Agotado' %}
+                            <span class="badge bg-danger">
+                                Agotado
+                            </span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">
+                                Por encargo
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-auto">
+                            
+                            {% if producto.estado == 'Disponible' %}
+                            {% if producto.precio_centavos is defined %}
+                            
+                            <form method="post"
+                            action="{{ url_for('agregar_carrito', id=producto._id) }}">
+                            
+                            <input type="hidden"
+                            name="_csrf_token"
+                            value="{{ csrf_token() }}">
+                            
+                            <div class="mb-3">
+                                <label for="cantidad-{{ producto._id }}"
+                                class="form-label">
+                                Cantidad:
+                            </label>
+                            
+                            <input type="number"
+                            id="cantidad-{{ producto._id }}"
+                            name="cantidad"
+                            class="form-control text-center"
+                            value="1"
+                            min="1"
+                            max="99"
+                            step="1"
+                            required>
+                        </div>
+                        
+                        <button type="submit"
+                        class="btn btn-dorado w-100">
+                        🛒 Agregar al carrito
+                    </button>
+                </form>
+
+                    
+                    {% else %}
+                    <button type="button"
+                    class="btn btn-secondary w-100"
+                    disabled>
+                    Precio por definir
+                </button>
+                
+                {% endif %}
+
+                            {% elif producto.estado == 'Agotado' %}
+                            <button class="btn btn-secondary w-100"
+                                    disabled>
+                                Producto agotado
+                            </button>
+                            {% else %}
+                            <button class="btn btn-outline-rosa w-100"
+                                    disabled>
+                                Disponible por encargo
+                            </button>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </article>
+            </div>
+
+            {% else %}
+
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">
+                    ♡ Todavía no tenemos postres publicados.
+                </p>
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const buscador = document.getElementById("buscarPostre");
+    const categoria = document.getElementById("filtrarCategoria");
+    const estado = document.getElementById("filtrarEstado");
+    const filas = document.querySelectorAll(".fila-producto");
+    const resultado = document.getElementById("resultadoBusqueda");
+
+    function filtrarProductos() {
+        const texto = buscador.value.trim().toLocaleLowerCase();
+        const categoriaElegida = categoria.value;
+        const estadoElegido = estado.value;
+
+        let visibles = 0;
+
+        filas.forEach(function (fila) {
+            const coincideNombre =
+                fila.dataset.nombre.includes(texto);
+
+            const coincideCategoria =
+                !categoriaElegida ||
+                fila.dataset.categoria === categoriaElegida;
+
+            const coincideEstado =
+                !estadoElegido ||
+                fila.dataset.estado === estadoElegido;
+
+            const mostrar =
+                coincideNombre && coincideCategoria && coincideEstado;
+
+            fila.hidden = !mostrar;
+            fila.style.display = mostrar ? "" : "none";
+
+            if (mostrar) {
+                visibles++;
+            }
+        });
+
+        resultado.textContent =
+            "Mostrando " + visibles +
+            " de " + filas.length + " productos.";
+    }
+
+    buscador.addEventListener("input", filtrarProductos);
+    categoria.addEventListener("change", filtrarProductos);
+    estado.addEventListener("change", filtrarProductos);
+
+    filtrarProductos();
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,150 @@
+
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="container py-5">
+
+    <div class="text-center mb-5">
+        <h1>📦 Mis pedidos</h1>
+        <p class="text-muted">
+            Consulta el estado de tus pedidos
+            en G&A Sweet Dreams.
+        </p>
+    </div>
+
+    {% if lista_pedidos %}
+
+        {% for pedido in lista_pedidos %}
+
+        <div class="card shadow-sm mb-4 rounded-4">
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between
+                            align-items-center flex-wrap gap-2">
+
+                    <h4>🧁 Pedido #{{ pedido._id }}</h4>
+
+                    {% if pedido.estado == "Aceptado" %}
+                        <span class="badge bg-success">
+                            ✅ Aceptado
+                        </span>
+                    {% elif pedido.estado == "Rechazado" %}
+                        <span class="badge bg-danger">
+                            ❌ Rechazado
+                        </span>
+                    {% elif pedido.estado == "Entregado" %}
+                        <span class="badge bg-primary">
+                            📦 Entregado
+                        </span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">
+                            ⏳ Pendiente
+                        </span>
+                    {% endif %}
+
+                </div>
+
+                <hr>
+
+                <p>
+                    <strong>Cliente:</strong>
+                    {{ pedido.nombre }}
+                </p>
+
+                <p>
+                    <strong>Fecha solicitada:</strong>
+                    {{ pedido.fecha_entrega }}
+                </p>
+
+                <h5 class="mt-4">🍰 Productos</h5>
+
+                {% for producto in pedido.productos %}
+                    <div class="d-flex justify-content-between">
+                        <span>
+                            {{ producto.nombre }}
+                            × {{ producto.cantidad }}
+                        </span>
+                        <span>
+                            ${{ "%.2f"|format(
+                                producto.subtotal_centavos / 100
+                            ) }} MXN
+                        </span>
+                    </div>
+                {% endfor %}
+
+                <hr>
+
+                <h5 class="text-end">
+                    Total:
+                    ${{ "%.2f"|format(
+                        pedido.total_centavos / 100
+                    ) }} MXN
+                </h5>
+
+                {% if pedido.estado == "Pendiente" %}
+                    <div class="alert alert-warning mt-3">
+                        ⏳ Estamos revisando tu pedido.
+                    </div>
+
+                {% elif pedido.estado == "Aceptado" %}
+                    <div class="alert alert-success mt-3">
+                        ✅ ¡Tu pedido fue aceptado!
+                        Está pendiente de entrega.
+                    </div>
+
+                {% elif pedido.estado == "Rechazado" %}
+                    <div class="alert alert-danger mt-3">
+                        ❌ Tu pedido fue rechazado.
+                    </div>
+
+                {% elif pedido.estado == "Entregado" %}
+                    <div class="alert alert-primary mt-3">
+                        📦 ¡Tu pedido fue entregado!
+                        Gracias por tu compra.
+                    </div>
+                {% endif %}
+
+                {% if pedido.mensaje_admin %}
+                    <div class="alert alert-info mt-3">
+                        <strong>💬 Mensaje de la pastelería:</strong>
+                        <p class="mb-0">
+                            {{ pedido.mensaje_admin }}
+                        </p>
+                    </div>
+                {% endif %}
+
+                <a href="{{ url_for(
+                    'pedido_confirmado',
+                    id=pedido._id,
+                    token=pedido.token_confirmacion
+                ) }}"
+                   class="btn btn-dorado mt-3">
+                    🔎 Ver detalles del pedido
+                </a>
+
+            </div>
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="text-center py-5">
+            <h3>🛒 Todavía no tienes pedidos</h3>
+            <p class="text-muted">
+                Cuando realices una compra,
+                aparecerá aquí.
+            </p>
+
+            <a href="{{ url_for('ver_carrito') }}"
+               class="btn btn-dorado mt-3">
+                🛍️ Ir al carrito
+            </a>
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

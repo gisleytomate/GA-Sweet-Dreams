@@ -26,9 +26,13 @@
                 <h2 class="sweet-heading mb-4">
                     🍰 Información del postre
                 </h2>
-
+                
                 <form method="post"
-                      action="{{ url_for('editar', id=producto._id) }}">
+                action="{{ url_for('editar', id=producto._id) }}"
+                enctype="multipart/form-data">
+
+
+                      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
                     <!-- Nombre -->
                     <div class="mb-4">
@@ -69,6 +73,47 @@
 
                         </select>
                     </div>
+                    
+                    <div class="col-md-3">
+                        <label for="precio" class="form-label">
+                            Precio (MXN)
+                        </label>
+                        
+                        <input
+                        type="number"
+                        id="precio"
+                        name="precio"
+                        class="form-control"
+                        min="0.01"
+                        step="0.01"
+                        value="{{ '%.2f'|format(producto.precio_centavos / 100) if producto.precio_centavos is defined else '' }}"
+                        placeholder="Ejemplo: 150.00"
+                        required
+                        >
+                    </div>
+                    
+                    <!-- Cambiar fotografía del postre -->
+                     <div class="mb-3">
+                        <label for="imagen" class="form-label">
+                            📸 Cambiar fotografía del postre
+                        </label>
+                        
+                        <input
+                        type="file"
+                        id="imagen"
+                        name="imagen"
+                        class="form-control"
+                        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                        >
+                        
+                        <div class="form-text">
+                            Selecciona una nueva fotografía si deseas cambiarla.
+                            Si no seleccionas ninguna, se conservará la actual.
+                            Formatos permitidos: JPG, PNG y WEBP.
+                        </div>
+                    </div>
+
+
 
                     <!-- Estado -->
                     <div class="mb-4">

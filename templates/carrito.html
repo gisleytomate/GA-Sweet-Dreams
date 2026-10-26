@@ -1,0 +1,192 @@
+
+{% extends "base.html" %}
+
+{% block contenido %}
+
+
+<!-- Acceso al historial de pedidos -->
+<div class="container mt-4 mb-3">
+
+    <div class="d-flex justify-content-end">
+
+        <a href="{{ url_for('mis_pedidos') }}"
+           class="btn btn-dorado px-4 py-2">
+
+            📦 Mis pedidos
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<div class="container py-5">
+
+    <div class="text-center mb-5">
+        <h1 class="sweet-heading">
+            🛒 Mi carrito de compras
+        </h1>
+        <p class="text-muted">
+            Tus dulces favoritos en un solo lugar.
+        </p>
+    </div>
+
+    {% if productos_carrito %}
+
+        <div class="card sweet-card">
+            <div class="card-body p-4">
+
+                {% for item in productos_carrito %}
+
+                    <div class="row align-items-center g-3 py-3">
+
+                        <div class="col-md-5">
+                            <h5>{{ item.nombre }}</h5>
+                            <p class="text-muted mb-0">
+                                Precio:
+                                ${{ "%.2f"|format(item.precio_centavos / 100) }}
+                                MXN
+                            </p>
+                        </div>
+                        
+                        
+                        <div class="col-md-3 text-center">
+                            
+                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                
+                                <!-- Disminuir cantidad -->
+                                 <form method="post"
+                                 action="{{ url_for('actualizar_carrito', id=item.id) }}">
+                                 
+                                 <input type="hidden"
+                                 name="_csrf_token"
+                                 value="{{ csrf_token() }}">
+                                 
+                                 <input type="hidden"
+                                 name="accion"
+                                 value="disminuir">
+                                 
+                                 <button type="submit"
+                                 class="btn btn-outline-secondary btn-sm">
+                                 −
+                                </button>
+                            </form>
+                            
+                            <!-- Cantidad actual -->
+                             <span class="fw-bold">
+                                {{ item.cantidad }}
+                            </span>
+                            
+                            <!-- Aumentar cantidad -->
+                             <form method="post"
+                             action="{{ url_for('actualizar_carrito', id=item.id) }}">
+                             
+                             <input type="hidden"
+                             name="_csrf_token"
+                             value="{{ csrf_token() }}">
+                             
+                             <input type="hidden"
+                             name="accion"
+                             value="aumentar">
+                             
+                             <button type="submit"
+                             class="btn btn-outline-secondary btn-sm">
+                             +
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Eliminar producto del carrito -->
+                     <form method="post"
+                     action="{{ url_for('actualizar_carrito', id=item.id) }}"
+                     class="mt-2">
+                     
+                     <input type="hidden"
+                     name="_csrf_token"
+                     value="{{ csrf_token() }}">
+                     
+                     <input type="hidden"
+                     name="accion"
+                     value="eliminar">
+                     
+                     <button type="submit"
+                     class="btn btn-outline-danger btn-sm">
+                     🗑️ Eliminar
+                    </button>
+                </form>
+            </div>
+
+
+                        <div class="col-md-5 text-md-end">
+                            <strong style="color: #b8860b;">
+                                ${{ "%.2f"|format(item.subtotal_centavos / 100) }}
+                                MXN
+                            </strong>
+                        </div>
+
+                    </div>
+
+                    {% if not loop.last %}
+                        <hr>
+                    {% endif %}
+
+                {% endfor %}
+
+                <hr>
+
+                <div class="text-end mt-4">
+                    <h3 class="sweet-heading">
+                        Total:
+                        ${{ "%.2f"|format(total_centavos / 100) }}
+                        MXN
+                    </h3>
+                </div>
+                
+                <!-- Botón para vaciar el carrito -->
+                 <div class="text-end mt-3">
+                    <form method="post"
+                    action="{{ url_for('vaciar_carrito') }}"
+                    onsubmit="return confirm('¿Seguro que deseas vaciar todo tu carrito?');">
+                    
+                    <input type="hidden"
+                    name="_csrf_token"
+                    value="{{ csrf_token() }}">
+                    
+                    <button type="submit"
+                    class="btn btn-outline-danger">
+                    🗑️ Vaciar carrito
+                </button>
+            </form>
+        </div>
+        <!-- Botón para finalizar la compra -->
+         <div class="text-end mt-3">
+            <a href="{{ url_for('checkout') }}"
+            class="btn btn-dorado px-4">
+            💗 Finalizar compra
+        </a>
+    </div>
+</div>
+</div>
+
+    {% else %}
+
+        <div class="text-center py-5">
+            <h3>🧁 Tu carrito está vacío</h3>
+            <p class="text-muted">
+                ¡Explora nuestros postres y elige tus favoritos!
+            </p>
+        </div>
+
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('catalogo') }}"
+           class="btn btn-dorado">
+            🍰 Seguir comprando
+        </a>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,188 @@
+
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="container py-5">
+
+    <div class="text-center mb-5">
+        <h1 class="sweet-heading">
+            💗 ¡Pedido registrado!
+        </h1>
+
+        <p class="text-muted">
+            Gracias por elegir G&A Sweet Dreams.
+            Hemos recibido tu solicitud.
+        </p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card sweet-card">
+                <div class="card-body p-4">
+
+                    <div class="text-center mb-4">
+                        <h3 class="sweet-heading">
+                            🧁 Resumen de tu pedido
+                        </h3>
+
+                        <p class="text-muted">
+                            Número de pedido:
+                            <strong>{{ pedido._id }}</strong>
+                        </p>
+                        
+                        <!-- Estado actual del pedido -->
+                         {% if pedido.estado == "Aceptado" %}
+                         
+                         <div class="alert alert-success mt-3">
+                            <h5>✅ ¡Pedido aceptado!</h5>
+                            <p class="mb-0">
+                                Tu pedido fue aceptado y está pendiente
+                                de preparación o entrega.
+                            </p>
+                        </div>
+                        
+                        {% elif pedido.estado == "Rechazado" %}
+                        
+                        <div class="alert alert-danger mt-3">
+                            <h5>❌ Pedido rechazado</h5>
+                            <p class="mb-0">
+                                Lamentablemente, no podemos aceptar
+                                tu pedido en esta ocasión.
+                            </p>
+                        </div>
+                        
+                        {% elif pedido.estado == "Entregado" %}
+                        
+                        <div class="alert alert-primary mt-3">
+                            <h5>📦 ¡Pedido entregado!</h5>
+                            <p class="mb-0">
+                                Tu pedido ha sido marcado como entregado.
+                                ¡Gracias por tu compra!
+                            </p>
+                        </div>
+                        {% else %}
+                        
+                        <div class="alert alert-warning mt-3">
+                            <h5>⏳ Pedido pendiente</h5>
+                            <p class="mb-0">
+                                Estamos revisando tu solicitud.
+                                Pronto conocerás su estado.
+                            </p>
+                        </div>
+                        
+                        {% endif %}
+                        
+                        <!-- Mensaje del administrador -->
+                         {% if pedido.mensaje_admin %}
+                         
+                         <div class="alert alert-info mt-3 text-start">
+                            <h5>💬 Mensaje de la pastelería</h5>
+                            <p class="mb-0">
+                                {{ pedido.mensaje_admin }}
+                            </p>
+                        </div>
+                        
+                        {% endif %}
+
+
+                    </div>
+
+                    <hr>
+
+                    <h5>🍰 Productos solicitados</h5>
+
+                    {% for item in pedido.productos %}
+                    <div class="d-flex justify-content-between
+                                align-items-center py-2">
+
+                        <div>
+                            <strong>{{ item.nombre }}</strong>
+                            <p class="text-muted mb-0">
+                                Cantidad: {{ item.cantidad }}
+                            </p>
+                        </div>
+
+                        <span>
+                            ${{ "%.2f"|format(
+                                item.subtotal_centavos / 100
+                            ) }} MXN
+                        </span>
+
+                    </div>
+                    {% endfor %}
+
+                    <hr>
+
+                    <div class="text-end mb-4">
+                        <h3 class="sweet-heading">
+                            Total:
+                            ${{ "%.2f"|format(
+                                pedido.total_centavos / 100
+                            ) }} MXN
+                        </h3>
+                    </div>
+
+                    <h5>📋 Datos de entrega</h5>
+
+                    <p>
+                        <strong>Cliente:</strong>
+                        {{ pedido.nombre }}
+                    </p>
+
+                    <p>
+                        <strong>Dirección:</strong>
+                        {{ pedido.direccion }}
+                    </p>
+
+                    <p>
+                        <strong>Fecha solicitada:</strong>
+                        {{ pedido.fecha_entrega }}
+                    </p>
+
+                    {% if pedido.observaciones %}
+                    <p>
+                        <strong>Indicaciones:</strong>
+                        {{ pedido.observaciones }}
+                    </p>
+                    {% endif %}
+
+
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('catalogo') }}"
+                           class="btn btn-dorado">
+                            🍰 Volver al catálogo
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Botón de WhatsApp -->
+<div class="text-center my-4">
+
+    <a href="{{ enlace_whatsapp }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="btn btn-success px-4 py-3">
+
+        💚 Enviar pedido por WhatsApp
+
+    </a>
+
+    <p class="text-muted small mt-2">
+        Se abrirá WhatsApp con los detalles
+        de tu pedido.
+    </p>
+
+</div>
+
+
+{% endblock %}

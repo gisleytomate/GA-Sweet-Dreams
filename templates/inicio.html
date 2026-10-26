@@ -1,0 +1,104 @@
+
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<section class="container py-5 text-center">
+
+    <p class="text-uppercase" style="letter-spacing: 3px; color: #b87587;">
+        Bienvenidos a nuestra pastelería
+    </p>
+
+    <h1 style="font-family: 'Playfair Display', serif; color: #8b5263;">
+        G&A Sweet Dreams
+    </h1>
+
+    <p class="lead mt-3">
+        Endulzamos tus momentos especiales con postres
+        preparados con amor, creatividad y dedicación.
+    </p>
+
+    <div class="mt-4">
+        <a href="{{ url_for('catalogo') }}"
+           class="btn btn-lg"
+           style="background: #b87587; color: white;">
+            Explorar nuestros postres
+        </a>
+    </div>
+
+</section>
+
+<section class="container py-5">
+
+    <h2 class="text-center mb-4">
+        Nuestros postres destacados
+    </h2>
+
+    <div class="row g-4">
+
+        {% set imagenes = {
+            'Pasteles': 'pasteles.jpeg',
+            'Cupcakes': 'cupcakes.jpeg',
+            'Galletas': 'galletas.jpeg',
+            'Cheesecakes': 'cheesecakes.jpeg',
+            'Macarons': 'macarons.jpeg',
+            'Postres especiales': 'postres.jpeg'
+        } %}
+
+        {% for producto in destacados %}
+
+        <div class="col-12 col-md-6 col-lg-3">
+
+            <div class="sweet-product-card h-100">
+
+                <img
+                    class="sweet-product-image"
+                    src="{{ url_for('static', filename='imagenes/' ~ imagenes.get(producto.categoria, 'postres.jpeg')) }}"
+                    alt="{{ producto.nombre }}"
+                >
+
+                <div class="p-3 text-center">
+
+                    <h5>{{ producto.nombre }}</h5>
+
+                    <p>{{ producto.categoria }}</p>
+
+                    <span class="badge bg-success">
+                        {{ producto.estado }}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <p class="text-center">
+            Próximamente tendremos deliciosos postres.
+        </p>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+<section class="container text-center py-5">
+
+    <h2>Hechos con amor para ti</h2>
+
+    <p>
+        En G&A Sweet Dreams creemos que cada celebración
+        merece un toque dulce y especial.
+    </p>
+
+    <a href="{{ url_for('catalogo') }}" class="btn btn-outline-secondary">
+        Ver catálogo completo
+    </a>
+
+</section>
+
+{% endblock %}
+
