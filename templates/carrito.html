@@ -34,6 +34,37 @@
 
     {% if productos_carrito %}
 
+    <!-- Contador de reservas -->
+     <div class="card mb-4"
+     style="border: 2px solid #e8b8c8;
+     border-radius: 18px;
+     background: #fff5f8;">
+
+     <div class="card-body text-center p-4">
+        <h4 style="color: #b8860b;">
+            ⏳ Tiempo restante de tu reserva
+        </h4>
+
+        <h2 id="contador-reserva"
+        style="color: #c45c85;
+        font-weight: bold;
+        font-size: 2.5rem;">
+        --:--
+    </h2>
+
+    <p id="mensaje-reserva"
+    class="mb-0 text-muted">
+    Tus postres están apartados temporalmente.
+    Finaliza tu compra antes de que termine el tiempo.
+</p>
+</div>
+</div>
+<!-- Fechas reales de vencimiento desde MongoDB -->
+<script id="datos-vencimientos" type="application/json">
+    {{ vencimientos | tojson }}
+</script>
+
+
         <div class="card sweet-card">
             <div class="card-body p-4">
 
@@ -49,67 +80,67 @@
                                 MXN
                             </p>
                         </div>
-                        
-                        
+
+
                         <div class="col-md-3 text-center">
-                            
+
                             <div class="d-flex justify-content-center align-items-center gap-2">
-                                
+
                                 <!-- Disminuir cantidad -->
                                  <form method="post"
                                  action="{{ url_for('actualizar_carrito', id=item.id) }}">
-                                 
+
                                  <input type="hidden"
                                  name="_csrf_token"
                                  value="{{ csrf_token() }}">
-                                 
+
                                  <input type="hidden"
                                  name="accion"
                                  value="disminuir">
-                                 
+
                                  <button type="submit"
                                  class="btn btn-outline-secondary btn-sm">
                                  −
                                 </button>
                             </form>
-                            
+
                             <!-- Cantidad actual -->
                              <span class="fw-bold">
                                 {{ item.cantidad }}
                             </span>
-                            
+
                             <!-- Aumentar cantidad -->
                              <form method="post"
                              action="{{ url_for('actualizar_carrito', id=item.id) }}">
-                             
+
                              <input type="hidden"
                              name="_csrf_token"
                              value="{{ csrf_token() }}">
-                             
+
                              <input type="hidden"
                              name="accion"
                              value="aumentar">
-                             
+
                              <button type="submit"
                              class="btn btn-outline-secondary btn-sm">
                              +
                             </button>
                         </form>
                     </div>
-                    
+
                     <!-- Eliminar producto del carrito -->
                      <form method="post"
                      action="{{ url_for('actualizar_carrito', id=item.id) }}"
                      class="mt-2">
-                     
+
                      <input type="hidden"
                      name="_csrf_token"
                      value="{{ csrf_token() }}">
-                     
+
                      <input type="hidden"
                      name="accion"
                      value="eliminar">
-                     
+
                      <button type="submit"
                      class="btn btn-outline-danger btn-sm">
                      🗑️ Eliminar
@@ -142,17 +173,17 @@
                         MXN
                     </h3>
                 </div>
-                
+
                 <!-- Botón para vaciar el carrito -->
                  <div class="text-end mt-3">
                     <form method="post"
                     action="{{ url_for('vaciar_carrito') }}"
                     onsubmit="return confirm('¿Seguro que deseas vaciar todo tu carrito?');">
-                    
+
                     <input type="hidden"
                     name="_csrf_token"
                     value="{{ csrf_token() }}">
-                    
+
                     <button type="submit"
                     class="btn btn-outline-danger">
                     🗑️ Vaciar carrito
@@ -188,5 +219,64 @@
     </div>
 
 </div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const contador = document.getElementById("contador-reserva");
+    const mensaje = document.getElementById("mensaje-reserva");
+    const datos = document.getElementById("datos-vencimientos");
+
+    if (!contador || !mensaje || !datos) return;
+
+    const vencimientos = JSON.parse(datos.textContent);
+    const fechas = Object.values(vencimientos)
+        .map(fecha => new Date(fecha).getTime())
+        .filter(fecha => Number.isFinite(fecha));
+
+    if (fechas.length === 0) {
+        contador.textContent = "--:--";
+        return;
+    }
+
+    // La reserva más próxima a vencer determina
+    // cuánto tiempo queda para finalizar el carrito.
+    const vencimiento = Math.min(...fechas);
+    let recargaProgramada = false;
+
+    function actualizarContador() {
+        const restante = Math.max(
+            0,
+            Math.ceil((vencimiento - Date.now()) / 1000)
+        );
+
+        const minutos = Math.floor(restante / 60);
+        const segundos = restante % 60;
+
+        contador.textContent =
+            String(minutos).padStart(2, "0") + ":" +
+            String(segundos).padStart(2, "0");
+
+        if (restante <= 0) {
+            contador.textContent = "00:00";
+            mensaje.textContent =
+                "Tu reserva ha vencido. Actualizando el carrito...";
+
+            if (!recargaProgramada) {
+                recargaProgramada = true;
+                window.location.reload();
+            }
+        } else if (restante <= 60) {
+            contador.style.color = "#dc3545";
+            mensaje.textContent =
+                "¡Tu reserva está por vencer! Finaliza tu compra.";
+        }
+    }
+
+    actualizarContador();
+    setInterval(actualizarContador, 1000);
+});
+</script>
+
 
 {% endblock %}

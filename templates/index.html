@@ -20,7 +20,7 @@
 </div>
 
 {% endif %}
- 
+
 
 <!-- Bienvenida -->
 <section class="sweet-hero text-center mb-4">
@@ -43,7 +43,7 @@
         <p class="text-muted">
             Agrega una nueva delicia a nuestro catálogo.
         </p>
-        
+
         <form method="post"
         action="{{ url_for('agregar') }}"
         enctype="multipart/form-data"
@@ -82,7 +82,7 @@
                     {% endfor %}
                 </select>
             </div>
-            
+
             <div class="col-md-3">
                 <label for="precio" class="form-label">
                     Precio (MXN)
@@ -98,12 +98,33 @@
                 required
                 >
             </div>
-            
+
+            <!-- Existencias disponibles del postre -->
+             <div class="col-md-3">
+                <label for="existencias" class="form-label">
+                    Existencias disponibles
+                </label>
+
+                <input
+                type="number"
+                id="existencias"
+                name="existencias"
+                class="form-control"
+                min="0"
+                max="100000"
+                step="1"
+                value="0"
+                placeholder="Ejemplo: 10"
+                required
+                >
+            </div>
+
+
             <div class="col-12">
                 <label for="imagen" class="form-label">
                     📸 Fotografía del postre
                 </label>
-                
+
                 <input
                 type="file"
                 id="imagen"
@@ -112,7 +133,7 @@
                 accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                 required
                 >
-                
+
                 <div class="form-text">
                     Selecciona una fotografía desde tu computadora.
                     Formatos permitidos: JPG, PNG y WEBP.
@@ -120,7 +141,7 @@
             </div>
 
 
-            
+
             <div class="col-md-3">
                 <label for="estado" class="form-label">
                     Estado
@@ -169,7 +190,7 @@
         </div>
         <!-- Buscador y filtros del catálogo -->
          <div class="row g-3 mb-4">
-            
+
             <div class="col-md-5">
                 <label for="buscarPostre" class="form-label">
                     🔎 Buscar postre
@@ -180,7 +201,7 @@
                 class="form-control"
                 placeholder="Ejemplo: Pastel de chocolate">
             </div>
-            
+
             <div class="col-md-4">
                 <label for="filtrarCategoria" class="form-label">
                     🍰Filtrar por categoría
@@ -194,7 +215,7 @@
                     {% endfor %}
                 </select>
             </div>
-            
+
             <div class="col-md-3">
                 <label for="filtrarEstado" class="form-label">
                     ✨ Disponibilidad
@@ -220,9 +241,9 @@
         data-nombre="{{ producto.nombre|lower }}"
         data-categoria="{{ producto.categoria }}"
         data-estado="{{ producto.estado }}">
-        
+
         <article class="card sweet-product-card h-100">
-            
+
             {% set imagenes = {
                 'Pasteles': 'pasteles.jpeg',
                 'Cupcakes': 'cupcakes.jpeg',
@@ -232,9 +253,9 @@
                 'Postres especiales': 'postres.jpeg'
             } %}
             {% set imagen = imagenes.get(producto.categoria, 'postres.jpeg') %}
-            
+
             <div class="sweet-product-image">
-                
+
                 {% if producto.imagen %}
                 <img
                 src="{{ url_for('static', filename='uploads/' ~ producto.imagen) }}"
@@ -247,18 +268,18 @@
                 loading="lazy">
                 {% endif %}
 
-                
+
                 <span class="sweet-product-category">
                     {{ producto.categoria }}
                 </span>
             </div>
-            
+
             <div class="card-body d-flex flex-column">
-                
+
                 <h3 class="sweet-product-title">
                     {{ producto.nombre }}
                 </h3>
-                
+
                 <p class="fw-bold fs-5 mb-2" style="color: #b8860b;">
                     {% if producto.precio_centavos is defined %}
                      ${{ "%.2f"|format(producto.precio_centavos / 100) }} MXN
@@ -267,11 +288,11 @@
                     {% endif %}
                 </p>
 
-                
+
                 <p class="sweet-product-type">
                     G&A Sweet Dreams
                 </p>
-                
+
                 <div class="mb-3">
                     {% if producto.estado == 'Disponible' %}
                     <span class="badge bg-success">Disponible</span>
@@ -289,8 +310,8 @@
                        href="{{ url_for('editar', id=producto._id) }}">
                         Editar
                     </a>
-                    
-                    
+
+
                 <form method="post"
                 class="flex-fill"
                 action="{{ url_for('eliminar', id=producto._id) }}"

@@ -26,7 +26,7 @@
                 <h2 class="sweet-heading mb-4">
                     🍰 Información del postre
                 </h2>
-                
+
                 <form method="post"
                 action="{{ url_for('editar', id=producto._id) }}"
                 enctype="multipart/form-data">
@@ -73,12 +73,12 @@
 
                         </select>
                     </div>
-                    
+
                     <div class="col-md-3">
                         <label for="precio" class="form-label">
                             Precio (MXN)
                         </label>
-                        
+
                         <input
                         type="number"
                         id="precio"
@@ -91,13 +91,38 @@
                         required
                         >
                     </div>
-                    
+
+                    <!-- Editar existencias del producto -->
+                     <div class="col-md-3">
+                        <label for="existencias" class="form-label">
+                            Existencias disponibles
+                        </label>
+
+                        <input
+                        type="number"
+                        id="existencias"
+                        name="existencias"
+                        class="form-control"
+                        min="0"
+                        max="100000"
+                        step="1"
+                        value="{{ producto.get('existencias', 0) }}"
+                        placeholder="Ejemplo: 10"
+                        required
+                        >
+
+                        <small class="text-muted">
+                            Unidades totales en inventario.
+                        </small>
+                    </div>
+
+
                     <!-- Cambiar fotografía del postre -->
                      <div class="mb-3">
                         <label for="imagen" class="form-label">
                             📸 Cambiar fotografía del postre
                         </label>
-                        
+
                         <input
                         type="file"
                         id="imagen"
@@ -105,7 +130,7 @@
                         class="form-control"
                         accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                         >
-                        
+
                         <div class="form-text">
                             Selecciona una nueva fotografía si deseas cambiarla.
                             Si no seleccionas ninguna, se conservará la actual.

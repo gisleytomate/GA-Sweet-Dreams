@@ -3,13 +3,25 @@ from flask import Flask, render_template, request, redirect, url_for, abort, jso
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 from dotenv import load_dotenv
 import hmac
 import secrets
 from functools import wraps
 from werkzeug.security import check_password_hash
+
+from reservas_temporales import (
+    reservar_producto,
+    cancelar_reserva,
+    liberar_reservas_vencidas,
+    reducir_reserva
+)
+
+from confirmar_reservas import (
+    confirmar_pedido_con_reservas,
+    ReservaNoDisponible
+)
 
 import uuid
 from io import BytesIO
@@ -105,7 +117,7 @@ def agregar_token_csrf():
 @app.before_request
 def verificar_csrf():
     if request.method in ("POST", "PUT", "PATCH", "DELETE"):
-        
+
         if request.path.startswith("/api/") and not session.get("es_admin"):
             return jsonify({
                 "error": "Debes iniciar sesión como administrador."
@@ -191,12 +203,42 @@ def logout():
     return redirect(url_for("inicio"))
 
 
+
 # Base de datos independiente
-MONGO_URI = os.environ.get("MONGO_URI", "mongodb://127.0.0.1:27017/")
-cliente = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
-base_datos = cliente["ga_sweet_dreams"]
+MONGO_URI = os.environ.get(
+    "MONGO_URI",
+    "mongodb://127.0.0.1:27017/"
+)
+
+cliente = MongoClient(
+    MONGO_URI,
+    serverSelectionTimeoutMS=3000,
+    tz_aware=True
+)
+
+# Permitir una base de datos diferente para las pruebas
+NOMBRE_BASE_DATOS = os.environ.get(
+    "MONGO_DB_NAME",
+    "ga_sweet_dreams"
+)
+
+base_datos = cliente[NOMBRE_BASE_DATOS]
+
 productos = base_datos["productos"]
 pedidos = base_datos["pedidos"]
+reservas = base_datos["reservas"]
+
+
+# Identificar las reservas temporales de cada visitante
+def obtener_id_reserva():
+    reserva_id = session.get("reserva_id")
+
+    if not isinstance(reserva_id, str) or not reserva_id:
+        reserva_id = uuid.uuid4().hex
+        session["reserva_id"] = reserva_id
+
+    return reserva_id
+
 
 
 
@@ -212,22 +254,25 @@ CATEGORIAS = [
 ESTADOS = ["Disponible", "Agotado", "Por encargo"]
 
 
+
 def validar_producto(datos):
     nombre = str(datos.get("nombre") or "").strip()
     categoria = str(datos.get("categoria") or "").strip()
     estado = str(datos.get("estado") or "").strip()
-    
+
     from decimal import Decimal, InvalidOperation
+
     try:
         precio = Decimal(str(datos.get("precio") or "").strip())
     except InvalidOperation:
         raise ValueError("Ingresa un precio válido.")
-    
+
     if not precio.is_finite() or precio <= 0:
         raise ValueError("El precio debe ser mayor que cero.")
-    
+
     if precio.as_tuple().exponent < -2:
         raise ValueError("El precio debe tener máximo dos decimales.")
+
     precio_centavos = int(precio * 100)
 
     if not nombre or not categoria or not estado:
@@ -242,12 +287,31 @@ def validar_producto(datos):
     if estado not in ESTADOS:
         raise ValueError("Selecciona un estado válido.")
 
+    # Validar las existencias del producto
+    existencias_texto = str(
+        datos.get("existencias") if datos.get("existencias") is not None else ""
+    ).strip()
+
+    if not existencias_texto.isdecimal():
+        raise ValueError(
+            "Las existencias deben ser un número entero no negativo."
+        )
+
+    existencias = int(existencias_texto)
+
+    if existencias > 100000:
+        raise ValueError(
+            "Las existencias no pueden superar 100000 unidades."
+        )
+
     return {
         "nombre": nombre,
         "categoria": categoria,
         "estado": estado,
-        "precio_centavos": precio_centavos
-        }
+        "precio_centavos": precio_centavos,
+        "existencias": existencias
+    }
+
 
 
 def leer_formulario():
@@ -316,9 +380,9 @@ def agregar_carrito(id):
         abort(400, description="Este producto todavía no tiene precio.")
 
     # Obtener el carrito de la sesión
-    carrito = session.get("carrito", {})        
-    
-    
+    carrito = session.get("carrito", {})
+
+
     try:
         cantidad = int(request.form.get("cantidad", "1"))
     except (ValueError, TypeError):
@@ -327,8 +391,46 @@ def agregar_carrito(id):
     if not 1 <= cantidad <= 99:
         abort(400, description="Selecciona entre 1 y 99 unidades.")
 
-    # Agregar la cantidad al carrito
-    carrito[id] = min(carrito.get(id, 0) + cantidad, 99)
+
+    # Comprobar que la cantidad total no supere 99
+    cantidad_actual = carrito.get(id, 0)
+
+    if not isinstance(cantidad_actual, int):
+        abort(400, description="Cantidad del carrito no válida.")
+
+    if cantidad_actual + cantidad > 99:
+        abort(400, description="No puedes agregar más de 99 unidades.")
+
+    # Liberar reservas vencidas antes de consultar disponibilidad
+    liberar_reservas_vencidas(cliente, productos, reservas)
+
+    # Identificar al visitante
+    reserva_id = obtener_id_reserva()
+
+
+    # Reservar todas las unidades en una sola transacción
+    try:
+        aceptada = reservar_producto(
+            cliente,
+            productos,
+            reservas,
+            id,
+            reserva_id,
+            cantidad=cantidad
+        )
+    except ValueError as error:
+        abort(400, description=str(error))
+
+    if not aceptada:
+        abort(
+            400,
+            description="No hay suficientes unidades disponibles."
+        )
+
+    # Actualizar el carrito solo después de reservar
+    carrito[id] = cantidad_actual + cantidad
+
+
 
     # Guardar los cambios
     session["carrito"] = carrito
@@ -337,22 +439,18 @@ def agregar_carrito(id):
 
 
 
-# Modificar cantidades del carrito
 @app.route("/carrito/actualizar/<id>", methods=["POST"])
 def actualizar_carrito(id):
     carrito = session.get("carrito", {})
 
-    # Verificar que el producto esté en el carrito
     if id not in carrito:
         abort(404, description="Producto no encontrado en el carrito.")
 
-    # Obtener la acción solicitada
     accion = request.form.get("accion")
 
     if accion not in ("aumentar", "disminuir", "eliminar"):
         abort(400, description="Acción no válida.")
 
-    # Validar la cantidad actual
     try:
         cantidad = int(carrito[id])
     except (ValueError, TypeError):
@@ -361,37 +459,150 @@ def actualizar_carrito(id):
     if not 1 <= cantidad <= 99:
         abort(400, description="Cantidad fuera del rango permitido.")
 
+    # Liberar reservas vencidas
+    liberar_reservas_vencidas(cliente, productos, reservas)
+
+    reserva_id = session.get("reserva_id")
+
+    if not reserva_id:
+        abort(400, description="La reserva no existe o venció.")
+
+    # Verificar que la reserva siga vigente
+    from datetime import datetime, timezone
+
+    reserva_actual = reservas.find_one({
+        "reserva_id": reserva_id,
+        "producto_id": ObjectId(id),
+        "estado": "activa",
+        "vence_en": {"$gt": datetime.now(timezone.utc)}
+    })
+
+    if reserva_actual is None:
+        session.pop("carrito", None)
+        abort(400, description="Tu reserva venció. Agrega nuevamente los productos.")
+
+    if reserva_actual.get("cantidad") != cantidad:
+        abort(400, description="La cantidad reservada no coincide con el carrito.")
+
     if accion == "aumentar":
-        if cantidad < 99:
-            carrito[id] = cantidad + 1
+        if cantidad >= 99:
+            abort(400, description="Máximo 99 unidades.")
+
+        aceptada = reservar_producto(
+            cliente, productos, reservas, id, reserva_id, cantidad=1
+        )
+
+        if not aceptada:
+            abort(400, description="No hay más unidades disponibles.")
+
+        carrito[id] = cantidad + 1
 
     elif accion == "disminuir":
-        if cantidad > 1:
-            carrito[id] = cantidad - 1
-        else:
+        liberada = reducir_reserva(
+            cliente, productos, reservas, id, reserva_id, cantidad=1
+        )
+
+        if not liberada:
+            abort(400, description="No se pudo reducir la reserva.")
+
+        if cantidad == 1:
             carrito.pop(id, None)
+        else:
+            carrito[id] = cantidad - 1
 
     elif accion == "eliminar":
+        cancelada = cancelar_reserva(
+            cliente, productos, reservas, id, reserva_id
+        )
+
+        if not cancelada:
+            abort(400, description="No se pudo cancelar la reserva.")
+
         carrito.pop(id, None)
 
-    # Guardar el carrito actualizado
     session["carrito"] = carrito
 
     return redirect(url_for("ver_carrito"))
 
 
 
+
+
+
 @app.route("/carrito/vaciar", methods=["POST"])
 def vaciar_carrito():
+    carrito = session.get("carrito", {})
+    reserva_id = session.get("reserva_id")
+
+    if reserva_id:
+        # Liberar las reservas de este visitante
+        reservas_cliente = list(reservas.find({
+            "reserva_id": reserva_id,
+            "estado": "activa"
+        }))
+
+        for reserva in reservas_cliente:
+            cancelar_reserva(
+                cliente,
+                productos,
+                reservas,
+                str(reserva["producto_id"]),
+                reserva_id
+            )
+
+    # Vaciar la sesión solo después de liberar las reservas
     session.pop("carrito", None)
+
     return redirect(url_for("ver_carrito"))
+
 
 
 # Mostrar el carrito de compras
 @app.route("/carrito")
 def ver_carrito():
     carrito = session.get("carrito", {})
-   
+
+
+    # Liberar las reservas vencidas antes de mostrar el carrito
+    liberar_reservas_vencidas(cliente, productos, reservas)
+
+    reserva_id = session.get("reserva_id")
+    carrito_actualizado = {}
+    vencimientos = {}
+
+    if reserva_id and isinstance(carrito, dict):
+        ahora = datetime.now(timezone.utc)
+
+        for id_producto, cantidad in carrito.items():
+            if not ObjectId.is_valid(id_producto):
+                continue
+
+            reserva = reservas.find_one({
+                "reserva_id": reserva_id,
+                "producto_id": ObjectId(id_producto),
+                "estado": "activa",
+                "vence_en": {"$gt": ahora}
+            })
+
+            if (
+                reserva
+                and type(cantidad) is int
+                and 1 <= cantidad <= 99
+                and reserva.get("cantidad") == cantidad
+            ):
+                # Guardar la fecha de vencimiento de cada reserva
+                if "vencimientos" not in locals():
+                    vencimientos = {}
+                    vencimientos[id_producto] = reserva["vence_en"]
+
+                carrito_actualizado[id_producto] = cantidad
+                vencimientos[id_producto] = reserva["vence_en"]
+
+    # Sincronizar el carrito con las reservas vigentes
+    carrito = carrito_actualizado
+    session["carrito"] = carrito
+
+
 
     productos_carrito = []
     total_centavos = 0
@@ -406,7 +617,7 @@ def ver_carrito():
             producto = productos.find_one({
                 "_id": ObjectId(id_producto)
             })
-            
+
 
 
             if not producto:
@@ -437,22 +648,59 @@ def ver_carrito():
             continue
 
     return render_template(
-        "carrito.html",
-        productos_carrito=productos_carrito,
-        total_centavos=total_centavos
-    )
-    
+    "carrito.html",
+    productos_carrito=productos_carrito,
+    total_centavos=total_centavos,
+    vencimientos={
+        id_producto: fecha.isoformat()
+        for id_producto, fecha in vencimientos.items()
+    }
+)
 
-# Página para finalizar la compra
+
+
 @app.route("/checkout", methods=["GET"])
 def checkout():
-    carrito = session.get("carrito", {})
+    # Liberar las reservas que ya vencieron
+    liberar_reservas_vencidas(cliente, productos, reservas)
 
-    # Evitar que el cliente compre con el carrito vacío
-    if not carrito:
+    carrito = session.get("carrito", {})
+    reserva_id = session.get("reserva_id")
+
+    if not isinstance(carrito, dict) or not carrito or not reserva_id:
         return redirect(url_for("ver_carrito"))
 
-    return render_template("checkout.html")
+    ahora = datetime.now(timezone.utc)
+    vencimientos = {}
+
+    for id_producto, cantidad in carrito.items():
+        if not ObjectId.is_valid(id_producto):
+            return redirect(url_for("ver_carrito"))
+
+        reserva = reservas.find_one({
+            "reserva_id": reserva_id,
+            "producto_id": ObjectId(id_producto),
+            "estado": "activa",
+            "vence_en": {"$gt": ahora}
+        })
+
+        if (
+            reserva is None
+            or type(cantidad) is not int
+            or reserva.get("cantidad") != cantidad
+        ):
+            return redirect(url_for("ver_carrito"))
+
+        vencimientos[id_producto] = reserva["vence_en"]
+
+    return render_template(
+        "checkout.html",
+        vencimientos={
+            id_producto: fecha.isoformat()
+            for id_producto, fecha in vencimientos.items()
+            }
+        )
+
 
 
 # Guardar el pedido del cliente
@@ -533,14 +781,14 @@ def finalizar_pedido():
 
     if not detalle:
         return redirect(url_for("ver_carrito"))
-    
-    
+
+
     # Crear un código privado para consultar el pedido
     token_pedido = secrets.token_urlsafe(32)
 
 
     # Documento que se guardará en MongoDB
-    nuevo_pedido = {     
+    nuevo_pedido = {
         "token_confirmacion": token_pedido,
         "nombre": nombre,
         "telefono": telefono,
@@ -550,24 +798,43 @@ def finalizar_pedido():
         "productos": detalle,
         "total_centavos": total_centavos,
         "estado": "Pendiente",
-        
+
         "mensaje_admin": "",
         "fecha_actualizacion": None,
 
         "fecha_registro": datetime.now(timezone.utc)
-        
+
     }
 
-    resultado = pedidos.insert_one(nuevo_pedido)
-    
+
+    # Confirmar el pedido y descontar las existencias
+    # mediante una transacción de MongoDB
+    liberar_reservas_vencidas(cliente, productos, reservas)
+
+    reserva_id = session.get("reserva_id")
+
+    try:
+        pedido_id = confirmar_pedido_con_reservas(
+            cliente,
+            productos,
+            reservas,
+            pedidos,
+            reserva_id,
+            carrito,
+            nuevo_pedido
+        )
+    except ReservaNoDisponible as error:
+        abort(400, description=str(error))
+
+
     # Guardar una referencia privada al pedido en la sesión
     mis_pedidos = session.get("mis_pedidos", [])
-    
+
     mis_pedidos.append({
-        "id": str(resultado.inserted_id),
+        "id": str(pedido_id),
         "token": token_pedido
         })
-    
+
     session["mis_pedidos"] = mis_pedidos[-30:]
     session.modified = True
 
@@ -575,11 +842,11 @@ def finalizar_pedido():
     # Vaciar el carrito después de guardar el pedido
     session.pop("carrito", None)
 
-    
+
     return redirect(
         url_for(
             "pedido_confirmado",
-            id=str(resultado.inserted_id),
+            id=str(pedido_id),
             token=token_pedido
         )
     )
@@ -703,7 +970,7 @@ def administrar_pedidos():
         "admin_pedidos.html",
         lista_pedidos=lista_pedidos
     )
-    
+
 
 # Actualizar el estado de un pedido
 @app.route("/admin/pedidos/<id>/estado", methods=["POST"])
@@ -773,10 +1040,14 @@ def actualizar_estado_pedido(id):
 
 
 
+
 @app.route("/agregar", methods=["POST"])
 @administrador_requerido
 def agregar():
     datos = leer_formulario()
+
+    # Todo producto nuevo comienza sin reservas
+    datos["reservadas"] = 0
 
     # Obtener la fotografía seleccionada
     archivo = request.files.get("imagen")
@@ -793,12 +1064,19 @@ def agregar():
         productos.insert_one(datos)
     except Exception:
         # Evitar dejar una fotografía huérfana si falla MongoDB
-        ruta = os.path.join(app.config["UPLOAD_FOLDER"], nombre_imagen)
+        ruta = os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            nombre_imagen
+        )
+
         if os.path.isfile(ruta):
             os.remove(ruta)
+
         raise
 
     return redirect(url_for("administracion"))
+
+
 
 
 
@@ -824,22 +1102,43 @@ def editar(id):
                 abort(400, description=str(error))
 
         try:
-            productos.update_one(
-                {"_id": producto["_id"]},
-                {"$set": datos}
+            # Actualizar solo si las nuevas existencias
+            # cubren todas las unidades reservadas.
+            resultado = productos.update_one(
+                {
+                    "_id": producto["_id"],
+                    "reservadas": {
+                        "$lte": datos["existencias"]
+                    }
+                },
+                {
+                    "$set": datos
+                }
             )
+
+            if resultado.matched_count == 0:
+                abort(
+                    409,
+                    description=(
+                        "No puedes reducir las existencias "
+                        "por debajo de las unidades reservadas."
+                    )
+                )
+
         except Exception:
-            # Si MongoDB falla, borrar la imagen nueva
+            # Si falla la actualización, borrar imagen nueva
             if nombre_nuevo:
                 ruta = os.path.join(
                     app.config["UPLOAD_FOLDER"],
                     nombre_nuevo
                 )
+
                 if os.path.isfile(ruta):
                     os.remove(ruta)
+
             raise
 
-        # Eliminar la fotografía anterior si fue reemplazada
+        # Eliminar fotografía anterior si fue reemplazada
         if nombre_nuevo:
             nombre_anterior = producto.get("imagen")
 
@@ -864,6 +1163,7 @@ def editar(id):
 
 
 
+
 # Eliminar producto
 @app.route("/eliminar/<id>", methods=["POST"])
 @administrador_requerido
@@ -875,9 +1175,25 @@ def eliminar(id):
         {"_id": producto["_id"]}
     )
 
-    # Si se eliminó correctamente, borrar su fotografía
-    if resultado.deleted_count == 1:
-        nombre_imagen = producto.get("imagen")
+
+    # Eliminar únicamente si no existen unidades reservadas
+    resultado = productos.delete_one(
+        {
+            "_id": producto["_id"],
+            "reservadas": 0
+        }
+    )
+
+    if resultado.deleted_count != 1:
+        abort(
+            409,
+            description=(
+                "No se puede eliminar este producto porque "
+                "tiene unidades reservadas o su inventario "
+                "necesita revisión."
+            )
+        )
+
 
         if nombre_imagen:
             # Solo permitir nombres de archivo, no rutas
@@ -985,17 +1301,22 @@ def error_mongo(error):
     return render_template("error.html", mensaje=mensaje), 503
 
 
+
 # Errores de peticiones
 @app.errorhandler(400)
 @app.errorhandler(404)
+@app.errorhandler(409)
 def error_peticion(error):
     if request.path.startswith("/api/"):
-        return jsonify({"error": error.description}), error.code
+        return jsonify({
+            "error": error.description
+        }), error.code
 
     return render_template(
         "error.html",
         mensaje=error.description
     ), error.code
+
 
 
 if __name__ == "__main__":

@@ -17,6 +17,36 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
 
+            <!-- Contador de reserva durante el checkout -->
+             <div class="card mb-4"
+             style="border: 2px solid #e8b8c8;
+             border-radius: 18px;
+             background: #fff5f8;">
+
+             <div class="card-body text-center p-4">
+
+                <h4 style="color: #b8860b;">
+                    ⏳ Tiempo restante para confirmar
+                </h4>
+
+                <h2 id="contador-checkout"
+                style="color: #c45c85;
+                font-size: 2.5rem;
+                font-weight: bold;">
+                --:--
+            </h2>
+
+            <p id="mensaje-checkout" class="text-muted mb-0">
+                Confirma tu pedido antes de que venza la reserva.
+            </p>
+        </div>
+    </div>
+
+    <script id="datos-vencimientos" type="application/json">
+        {{ vencimientos | tojson }}
+    </script>
+
+
             <div class="card sweet-card">
                 <div class="card-body p-4">
 
@@ -101,5 +131,65 @@
     </div>
 
 </div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const contador = document.getElementById("contador-checkout");
+    const mensaje = document.getElementById("mensaje-checkout");
+    const datos = document.getElementById("datos-vencimientos");
+
+    if (!contador || !mensaje || !datos) return;
+
+    const vencimientos = JSON.parse(datos.textContent);
+    const fechas = Object.values(vencimientos)
+        .map(fecha => new Date(fecha).getTime())
+        .filter(fecha => Number.isFinite(fecha));
+
+    if (!fechas.length) return;
+
+    const vencimiento = Math.min(...fechas);
+    const boton = document.querySelector(
+        'form[action$="/checkout/finalizar"] button[type="submit"]'
+    );
+
+    let redireccionProgramada = false;
+
+    function actualizarContador() {
+        const restante = Math.max(
+            0,
+            Math.ceil((vencimiento - Date.now()) / 1000)
+        );
+
+        const minutos = Math.floor(restante / 60);
+        const segundos = restante % 60;
+
+        contador.textContent =
+            String(minutos).padStart(2, "0") + ":" +
+            String(segundos).padStart(2, "0");
+
+        if (restante <= 0) {
+            contador.textContent = "00:00";
+            mensaje.textContent =
+                "Tu reserva ha vencido. Regresando al carrito...";
+
+            if (boton) boton.disabled = true;
+
+            if (!redireccionProgramada) {
+                redireccionProgramada = true;
+                window.location.href = "{{ url_for('ver_carrito') }}";
+            }
+        } else if (restante <= 60) {
+            contador.style.color = "#dc3545";
+            mensaje.textContent =
+                "¡Queda menos de un minuto! Confirma tu pedido.";
+        }
+    }
+
+    actualizarContador();
+    setInterval(actualizarContador, 1000);
+});
+</script>
+
 
 {% endblock %}

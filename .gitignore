@@ -17,3 +17,17 @@ venv/
 # Archivos temporales de Python
 __pycache__/
 *.pyc
+
+
+# Respaldos locales
+app_respaldo_antes_reservas.py
+
+# Scripts de pruebas locales
+probar_*.py
+preparar_reservas.py
+
+# Dependencias de Node no utilizadas en Flask
+package-lock.json
+
+# Fotografías cargadas durante las pruebas
+static/uploads/
