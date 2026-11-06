@@ -256,18 +256,24 @@
 
             <div class="sweet-product-image">
 
-                {% if producto.imagen %}
-                <img
-                src="{{ url_for('static', filename='uploads/' ~ producto.imagen) }}"
-                alt="Fotografía de {{ producto.nombre }}"
-                loading="lazy">
-                {% else %}
-                <img
-                src="{{ url_for('static', filename='imagenes/' ~ imagen) }}"
-                alt="Imagen ilustrativa de {{ producto.categoria }}"
-                loading="lazy">
-                {% endif %}
 
+                {% if producto.imagen %}
+
+                 <img
+                     src="{{ url_for('static', filename='uploads/' ~ producto.imagen) }}"
+                     alt="Fotografía de {{ producto.nombre }}"
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='/static/imagenes/{{ imagen }}';">
+
+
+                {% else %}
+
+                 <img
+                     src="{{ url_for('static', filename='imagenes/' ~ imagen) }}"
+                     alt="Imagen ilustrativa de {{ producto.categoria }}"
+                     loading="lazy">
+
+                {% endif %}
 
                 <span class="sweet-product-category">
                     {{ producto.categoria }}
