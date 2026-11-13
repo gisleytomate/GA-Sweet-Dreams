@@ -1,0 +1,92 @@
+
+{% extends 'base.html' %}
+
+{% block titulo %}
+{{ producto.nombre }} | G&A Sweet Dreams
+{% endblock %}
+
+{% block contenido %}
+
+<section class="sweet-hero text-center mb-4">
+    <h1>Ficha de nuestro postre</h1>
+    <p class="sweet-subtitle">
+        G&A Sweet Dreams
+    </p>
+</section>
+
+<section class="card sweet-card mb-4">
+    <div class="card-body p-4">
+
+        <h2 class="sweet-heading">
+            {{ producto.nombre }}
+        </h2>
+
+        <p>
+            <strong>Categoría:</strong>
+            {{ producto.categoria }}
+        </p>
+
+        <p>
+            <strong>Descripción:</strong>
+            {{ producto.descripcion or 'Sin descripción disponible' }}
+        </p>
+
+        <p>
+            <strong>Precio:</strong>
+            {% if producto.precio is defined and producto.precio is not none %}
+             ${{ "%.2f"|format(producto.precio|float) }} MXN
+             
+            {% else %}
+             Precio no disponible
+            {% endif %}
+        </p>
+
+        {% set disponibles = (producto.existencias|default(0)|int)
+                           - (producto.reservadas|default(0)|int) %}
+
+        <p>
+            <strong>Unidades disponibles:</strong>
+            {{ [disponibles, 0]|max }}
+        </p>
+
+        {% if disponibles > 0 %}
+            <p class="text-success">
+                Disponible para reservar
+            </p>
+        {% else %}
+            <p class="text-danger">
+                Producto agotado temporalmente
+            </p>
+        {% endif %}
+
+        <a href="{{ url_for('catalogo') }}"
+           class="btn btn-primary">
+            Volver al catálogo
+        </a>
+        
+        <!-- Código QR del producto -->
+         <div class="text-center my-4">
+            <h3>Código QR del producto</h3>
+            
+            <p>
+                Escanea este código para consultar
+                la ficha actualizada del postre.
+            </p>
+            
+            <img
+            src="{{ url_for('qr_producto', id=producto._id) }}"
+            alt="Código QR de {{ producto.nombre }}"
+            class="img-fluid"
+            style="width: 220px; height: 220px;"
+            >
+            
+            <p class="text-muted mt-2">
+                G&A Sweet Dreams
+            </p>
+        </div>
+
+
+    </div>
+</section>
+
+{% endblock %}

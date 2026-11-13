@@ -11,6 +11,10 @@ import secrets
 from functools import wraps
 from werkzeug.security import check_password_hash
 
+import io
+import qrcode
+from flask import send_file
+
 from reservas_temporales import (
     reservar_producto,
     cancelar_reserva,
@@ -364,6 +368,58 @@ def catalogo():
         productos=lista,
         categorias=CATEGORIAS,
         estados=ESTADOS
+    )
+
+
+# Ficha pública del producto para el código QR
+@app.route("/ficha/<id>")
+def ficha_producto(id):
+    producto = buscar_producto(id)
+
+    return render_template(
+        "ficha_producto.html",
+        producto=producto
+    )
+    
+
+# Generar código QR para la ficha pública del producto
+@app.route("/qr/producto/<id>")
+def qr_producto(id):
+    # Verificar que el producto exista en MongoDB
+    producto = buscar_producto(id)
+
+    # Construir la dirección pública de la ficha
+    base_url = os.environ.get(
+        "APP_BASE_URL",
+        "https://ga-sweet-dreams-2.onrender.com"
+    ).rstrip("/")
+
+    url_ficha = f"{base_url}{url_for('ficha_producto', id=id)}"
+
+    # Generar el código QR
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=4
+    )
+
+    qr.add_data(url_ficha)
+    qr.make(fit=True)
+
+    imagen = qr.make_image(
+        fill_color="black",
+        back_color="white"
+    )
+
+    # Guardar la imagen en memoria
+    buffer = io.BytesIO()
+    imagen.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        mimetype="image/png"
     )
 
 
